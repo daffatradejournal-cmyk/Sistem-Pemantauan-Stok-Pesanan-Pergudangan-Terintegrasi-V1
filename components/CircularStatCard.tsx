@@ -21,9 +21,10 @@ export function CircularStatCard({
   subtitle = `Tahun Berjalan ${new Date().getFullYear()}`,
   percent,
 }: Props) {
-  const radius = 18;
+  const radius = 20;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (percent / 100) * circumference;
+  const clampedPercent = Math.min(100, Math.max(0, percent));
+  const strokeDashoffset = circumference - (clampedPercent / 100) * circumference;
   const strokeColor = badgeColor === 'purple' ? '#A855F7' : '#10B981';
 
   return (
@@ -34,24 +35,24 @@ export function CircularStatCard({
           {icon}
         </div>
 
-        {/* Circular progress badge with +% in center */}
-        <div className="relative w-12 h-12 flex items-center justify-center flex-shrink-0">
-          <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 48 48">
+        {/* Circular progress badge with percentage in center */}
+        <div className="relative w-13 h-13 sm:w-14 sm:h-14 flex items-center justify-center flex-shrink-0">
+          <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 52 52">
             <circle
-              cx="24"
-              cy="24"
+              cx="26"
+              cy="26"
               r={radius}
               stroke="currentColor"
-              strokeWidth="3.5"
+              strokeWidth="4"
               fill="transparent"
-              className="text-slate-100 dark:text-white/5"
+              className="text-slate-100 dark:text-white/10"
             />
             <circle
-              cx="24"
-              cy="24"
+              cx="26"
+              cy="26"
               r={radius}
               stroke={strokeColor}
-              strokeWidth="3.5"
+              strokeWidth="4"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
               strokeLinecap="round"
@@ -59,12 +60,14 @@ export function CircularStatCard({
               className="transition-all duration-700 ease-out"
             />
           </svg>
-          <span
-            className="absolute text-[11px] font-bold"
-            style={{ color: strokeColor }}
-          >
-            {badgeText}
-          </span>
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <span
+              className="text-[11px] font-black tracking-tight text-center leading-none"
+              style={{ color: strokeColor }}
+            >
+              {badgeText}
+            </span>
+          </div>
         </div>
       </div>
 

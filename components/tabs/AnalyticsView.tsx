@@ -97,8 +97,15 @@ export function AnalyticsView({
   };
 
   const netProfitCalculated = kpi.netProfit !== undefined ? kpi.netProfit : (kpi.revenue - (kpi.totalCost || 0));
+  const profitMarginPercent = kpi.revenue > 0 ? Math.round((netProfitCalculated / kpi.revenue) * 100) : 0;
+  const profitBadgeText = profitMarginPercent > 0 ? `+${profitMarginPercent}%` : `${profitMarginPercent}%`;
+  const profitProgressPercent = Math.min(100, Math.max(0, profitMarginPercent));
 
   const stockDonut = data?.donuts?.stockStatus || { safe: 0, low: 0, out: 0, total: 0 };
+  const safeStockPercent = stockDonut.total > 0
+    ? Math.round((stockDonut.safe / stockDonut.total) * 100)
+    : 100;
+  const safeStockBadgeText = `${safeStockPercent}%`;
   const orderDonut = data?.donuts?.orderHealth || { delivered: 0, cancelled: 0, processed: 0, total: 0 };
 
   return (
@@ -211,22 +218,22 @@ export function AnalyticsView({
         <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <CircularStatCard
             icon={<Wallet className="w-5 h-5 text-brandPurple" />}
-            badgeText="+15%"
+            badgeText={safeStockBadgeText}
             badgeColor="purple"
             title="Nilai Aset Stok Toko"
             value={kpi.inventoryValuation}
-            subtitle="Estimasi Nilai Jual Stok"
-            percent={68}
+            subtitle={`${stockDonut.safe} dari ${stockDonut.total} produk berstatus aman`}
+            percent={safeStockPercent}
           />
 
           <CircularStatCard
             icon={<Briefcase className="w-5 h-5 text-emerald-500" />}
-            badgeText="Untung Nyata"
+            badgeText={profitBadgeText}
             badgeColor="green"
             title="Keuntungan Bersih"
             value={netProfitCalculated}
-            subtitle="Laba Bersih (Omzet - Modal)"
-            percent={kpi.revenue > 0 ? Math.min(100, Math.max(10, Math.round((netProfitCalculated / kpi.revenue) * 100))) : 80}
+            subtitle={`Margin Laba: ${profitMarginPercent}% dari Total Omzet`}
+            percent={profitProgressPercent}
           />
         </div>
       </div>
