@@ -59,9 +59,9 @@ export function CustomerOrderTable({
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-base font-bold text-slate-800 dark:text-white">
-            Customer order
+            Pesanan Pelanggan Terbaru
           </h3>
-          <p className="text-xs text-slate-400">Transaksi pesanan langsung dari database PostgreSQL</p>
+          <p className="text-xs text-slate-400">Data transaksi pesanan toko langsung dari database PostgreSQL</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -79,7 +79,7 @@ export function CustomerOrderTable({
             className="px-3 py-1.5 bg-brandBlue text-white text-xs font-semibold rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-1.5 shadow-sm shadow-brandBlue/20"
           >
             <PlusCircle className="w-3.5 h-3.5" />
-            <span>+ Buat Pesanan Baru</span>
+            <span>+ Catat Pesanan Baru</span>
           </button>
         </div>
       </div>
@@ -89,11 +89,11 @@ export function CustomerOrderTable({
         <table className="w-full text-left border-separate border-spacing-y-2">
           <thead>
             <tr className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-              <th className="pb-1 pl-3 font-medium">Profile</th>
-              <th className="pb-1 font-medium">Address</th>
-              <th className="pb-1 font-medium">Date</th>
-              <th className="pb-1 font-medium">Status</th>
-              <th className="pb-1 pr-3 text-right font-medium">Price</th>
+              <th className="pb-1 pl-3 font-medium">Pelanggan</th>
+              <th className="pb-1 font-medium">Alamat / Cabang</th>
+              <th className="pb-1 font-medium">Tanggal</th>
+              <th className="pb-1 font-medium">Status Pesanan</th>
+              <th className="pb-1 pr-3 text-right font-medium">Total Bayar</th>
             </tr>
           </thead>
           <tbody>
@@ -139,10 +139,10 @@ export function CustomerOrderTable({
                           {initials}
                         </div>
                         <div>
-                          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block truncate max-w-[110px]">
+                          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block truncate max-w-[120px]">
                             {ord.customerName}
                           </span>
-                          <span className="text-[10px] text-slate-400 truncate max-w-[110px] block">
+                          <span className="text-[10px] text-slate-400 truncate max-w-[120px] block font-mono">
                             {ord.productSku} ({ord.quantity}x)
                           </span>
                         </div>
@@ -150,8 +150,8 @@ export function CustomerOrderTable({
                     </td>
 
                     {/* Address / Location */}
-                    <td className="py-2.5 text-xs text-slate-600 dark:text-slate-300 font-medium truncate max-w-[90px]">
-                      {ord.customerLocation || 'Gudang Utama'}
+                    <td className="py-2.5 text-xs text-slate-600 dark:text-slate-300 font-medium truncate max-w-[110px]">
+                      {ord.customerLocation || 'Toko Utama'}
                     </td>
 
                     {/* Date */}
@@ -167,10 +167,10 @@ export function CustomerOrderTable({
                         {isCancelled && <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />}
                         <span className={`text-xs font-bold ${statusColor}`}>
                           {ord.status === 'DELIVERED'
-                            ? 'Delivered'
+                            ? 'Selesai (Terkirim)'
                             : ord.status === 'CANCELLED'
-                            ? 'Cancelled'
-                            : 'Processed'}
+                            ? 'Ditolak (Stok Habis)'
+                            : 'Sedang Diproses'}
                         </span>
                       </div>
                     </td>
@@ -185,7 +185,7 @@ export function CustomerOrderTable({
             ) : (
               <tr>
                 <td colSpan={5} className="py-8 text-center text-xs text-slate-400">
-                  Belum ada pesanan tercatat di PostgreSQL. Klik &quot;+ Buat Pesanan Baru&quot; atau Seed Data di menu Settings.
+                  Belum ada pesanan tercatat di database toko. Klik &quot;+ Catat Pesanan Baru&quot; atau buka menu Pengaturan Database untuk mengisi data awal.
                 </td>
               </tr>
             )}

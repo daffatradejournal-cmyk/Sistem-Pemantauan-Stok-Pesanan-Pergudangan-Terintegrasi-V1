@@ -209,68 +209,68 @@ export async function seedDatabase(): Promise<{ success: boolean; message: strin
 
     const sampleProducts = [
       {
-        sku: 'SKU-LOG-001',
-        name: 'Barcode Scanner Handheld 2D USB',
-        category: 'Peralatan Scanning',
-        price: 850000,
-        stock: 35,
+        sku: 'BRG-BML-001',
+        name: 'Minyak Goreng Sawit Bimoli Pouch 2 Liter',
+        category: 'Sembako & Minyak',
+        price: 36000,
+        stock: 45,
         min: 10,
       },
       {
-        sku: 'SKU-LOG-002',
-        name: 'Thermal Label Roll 100x150mm (500pcs)',
-        category: 'Packaging & Consumables',
-        price: 95000,
-        stock: 120,
-        min: 25,
-      },
-      {
-        sku: 'SKU-LOG-003',
-        name: 'Hand Pallet Jack Hydraulic 3 Ton',
-        category: 'Heavy Material Handling',
-        price: 4750000,
-        stock: 4, // Low stock on purpose
-        min: 5,
-      },
-      {
-        sku: 'SKU-LOG-004',
-        name: 'Stretch Film Industri 50cm x 300m',
-        category: 'Packaging & Consumables',
-        price: 78000,
-        stock: 0, // Out of stock on purpose
-        min: 15,
-      },
-      {
-        sku: 'SKU-LOG-005',
-        name: 'Industrial Heavy Duty Storage Rack 4-Tier',
-        category: 'Pergudangan & Storage',
-        price: 3200000,
-        stock: 12,
-        min: 3,
-      },
-      {
-        sku: 'SKU-LOG-006',
-        name: 'Safety Helmet Pro Vented + Chinstrap',
-        category: 'Safety & PPE',
-        price: 135000,
-        stock: 48,
-        min: 10,
-      },
-      {
-        sku: 'SKU-LOG-007',
-        name: 'RFID UHF Warehouse Inventory Tag (Pack 100)',
-        category: 'Peralatan Scanning',
-        price: 450000,
-        stock: 3, // Low stock on purpose
+        sku: 'BRG-BRS-002',
+        name: 'Beras Pandan Wangi Super Ramos 5 Kg',
+        category: 'Bahan Pokok & Beras',
+        price: 74000,
+        stock: 30,
         min: 8,
       },
       {
-        sku: 'SKU-LOG-008',
-        name: 'Manual Box Strapping Tool Tensioner',
-        category: 'Packaging & Consumables',
-        price: 260000,
-        stock: 22,
+        sku: 'BRG-GLA-003',
+        name: 'Gula Pasir Kristal Putih Gulaku 1 Kg',
+        category: 'Sembako & Pemanis',
+        price: 18500,
+        stock: 4, // Stok menipis untuk demo alert
+        min: 10,
+      },
+      {
+        sku: 'BRG-KOP-004',
+        name: 'Kopi Bubuk Robusta Asli Dampit 250 Gram',
+        category: 'Kopi & Minuman',
+        price: 28000,
+        stock: 0, // Stok habis untuk demo alert out of stock
         min: 5,
+      },
+      {
+        sku: 'BRG-TPG-005',
+        name: 'Tepung Terigu Serbaguna Segitiga Biru 1 Kg',
+        category: 'Bahan Kue & Dapur',
+        price: 13500,
+        stock: 60,
+        min: 15,
+      },
+      {
+        sku: 'BRG-KRP-006',
+        name: 'Keripik Singkong Balado Pedas Manis UMKM 200g',
+        category: 'Snack & Camilan UMKM',
+        price: 16000,
+        stock: 25,
+        min: 6,
+      },
+      {
+        sku: 'BRG-THS-007',
+        name: 'Teh Celup Melati Sosro Kotak Isi 30 Kantong',
+        category: 'Kopi & Minuman',
+        price: 7500,
+        stock: 3, // Stok menipis untuk demo alert
+        min: 8,
+      },
+      {
+        sku: 'BRG-SNL-008',
+        name: 'Sabun Cuci Piring Sunlight Jeruk Nipis 750 ml',
+        category: 'Kebutuhan Toko & Rumah',
+        price: 17000,
+        stock: 40,
+        min: 10,
       },
     ];
 
@@ -295,7 +295,7 @@ export async function seedDatabase(): Promise<{ success: boolean; message: strin
       // Initial stock log
       await client.query(
         `INSERT INTO stock_logs (product_id, sku, change_type, quantity_change, previous_stock, new_stock, notes)
-         VALUES ($1, $2, 'BARCODE_IN', $3, 0, $3, 'Initial inventory setup / stock opname')`,
+         VALUES ($1, $2, 'BARCODE_IN', $3, 0, $3, 'Stok awal setup inventaris toko / kulakan pertama')`,
         [res.rows[0].id, res.rows[0].sku, p.stock]
       );
 
@@ -304,78 +304,78 @@ export async function seedDatabase(): Promise<{ success: boolean; message: strin
         await client.query(
           `INSERT INTO stock_alerts (product_id, alert_type, message, is_resolved)
            VALUES ($1, 'OUT_OF_STOCK', $2, false)`,
-          [res.rows[0].id, `PERINGATAN: Stok produk ${p.name} (${p.sku}) habis total (0 unit)! Segera lakukan pengadaan.`]
+          [res.rows[0].id, `PERINGATAN: Stok barang ${p.name} (${p.sku}) habis total (0 unit)! Segera lakukan kulakan ulang.`]
         );
       } else if (p.stock <= p.min) {
         await client.query(
           `INSERT INTO stock_alerts (product_id, alert_type, message, is_resolved)
            VALUES ($1, 'LOW_STOCK', $2, false)`,
-          [res.rows[0].id, `PERINGATAN: Stok produk ${p.name} (${p.sku}) tersisa ${p.stock} unit (Batas minimum: ${p.min} unit).`]
+          [res.rows[0].id, `PERINGATAN: Stok barang ${p.name} (${p.sku}) tersisa ${p.stock} unit (Batas aman toko: ${p.min} unit).`]
         );
       }
     }
 
-    // Insert sample orders (matches the reference image order table)
+    // Insert sample orders matching Indonesian UMKM clients
     const sampleOrders = [
       {
-        order_number: 'ORD-2024-0801',
-        customer_name: 'Press Logistika',
-        customer_location: 'London Depot #4',
+        order_number: 'ORD-UMKM-0801',
+        customer_name: 'Warung Bu Siti',
+        customer_location: 'Pasar Minggu, Jaksel',
         product_index: 0,
-        qty: 1,
+        qty: 3,
         status: 'DELIVERED',
-        exec_ms: 14.2,
+        exec_ms: 12.2,
         date_offset_hours: 2,
       },
       {
-        order_number: 'ORD-2024-0802',
-        customer_name: 'Marina Sentosa',
-        customer_location: 'Manchester Hub',
+        order_number: 'ORD-UMKM-0802',
+        customer_name: 'Toko Berkah Mandiri',
+        customer_location: 'Cinere, Depok',
         product_index: 1,
-        qty: 4,
+        qty: 2,
         status: 'PROCESSED',
-        exec_ms: 18.5,
-        date_offset_hours: 6,
+        exec_ms: 15.5,
+        date_offset_hours: 5,
       },
       {
-        order_number: 'ORD-2024-0803',
-        customer_name: 'Alex Warehouse Ltd',
-        customer_location: 'Unknown Facility B',
-        product_index: 3, // Out of stock product
-        qty: 5,
+        order_number: 'ORD-UMKM-0803',
+        customer_name: 'Kafe Kopi Sahabat',
+        customer_location: 'Dago, Bandung',
+        product_index: 3, // Produk kopi stok 0
+        qty: 4,
         status: 'CANCELLED',
-        exec_ms: 22.8,
-        date_offset_hours: 12,
+        exec_ms: 19.8,
+        date_offset_hours: 10,
       },
       {
-        order_number: 'ORD-2024-0804',
-        customer_name: 'Robert Logistics',
-        customer_location: 'New York Cargo Terminal',
+        order_number: 'ORD-UMKM-0804',
+        customer_name: 'Kedai Makan Mas Budi',
+        customer_location: 'Galaxy, Bekasi',
         product_index: 4,
-        qty: 1,
+        qty: 5,
         status: 'DELIVERED',
-        exec_ms: 12.1,
-        date_offset_hours: 24,
+        exec_ms: 11.4,
+        date_offset_hours: 20,
       },
       {
-        order_number: 'ORD-2024-0805',
-        customer_name: 'PT Mitra Sukses Gudang',
-        customer_location: 'Jakarta Hub 1',
+        order_number: 'ORD-UMKM-0805',
+        customer_name: 'Koperasi Warga Barokah',
+        customer_location: 'Tebet, Jakarta',
         product_index: 5,
-        qty: 10,
+        qty: 8,
         status: 'DELIVERED',
-        exec_ms: 16.4,
-        date_offset_hours: 36,
+        exec_ms: 14.1,
+        date_offset_hours: 32,
       },
       {
-        order_number: 'ORD-2024-0806',
-        customer_name: 'Surabaya Express DC',
-        customer_location: 'Surabaya Timur',
+        order_number: 'ORD-UMKM-0806',
+        customer_name: 'Grosir Sembako Rezeki',
+        customer_location: 'Cibubur, Ciracas',
         product_index: 6,
-        qty: 15,
-        status: 'CANCELLED', // Rejected by row lock insufficient stock
-        exec_ms: 25.0,
-        date_offset_hours: 48,
+        qty: 20,
+        status: 'CANCELLED', // Ditolak karena stok fisik tersisa 3 unit
+        exec_ms: 21.0,
+        date_offset_hours: 44,
       },
     ];
 

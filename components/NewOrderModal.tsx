@@ -81,16 +81,16 @@ export function NewOrderModal({ isOpen, onClose, onSuccess }: Props) {
         </button>
 
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
-          + Buat Pesanan Baru (Row-Level Locking)
+          + Catat Pesanan Pembeli Baru
         </h3>
         <p className="text-xs text-slate-400 mb-4">
-          Transaksi dieksekusi atomik langsung ke database PostgreSQL dengan penguncian baris produk.
+          Pesanan otomatis memotong stok barang dengan aman dan akurat (proteksi anti-stok minus).
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
           <div>
             <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-              Pilih Produk
+              Pilih Barang Dagangan
             </label>
             <select
               value={selectedProductId}
@@ -100,7 +100,7 @@ export function NewOrderModal({ isOpen, onClose, onSuccess }: Props) {
             >
               {products.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name} ({p.sku}) — Sisa: {p.currentStock} unit
+                  {p.name} ({p.sku}) — Sisa: {p.currentStock} pcs
                 </option>
               ))}
             </select>
@@ -108,35 +108,35 @@ export function NewOrderModal({ isOpen, onClose, onSuccess }: Props) {
 
           <div>
             <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-              Nama Pelanggan
+              Nama Pembeli / Warung Pelanggan
             </label>
             <input
               type="text"
               required
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
-              placeholder="Contoh: PT Mitra Logistik Jaya"
+              placeholder="Contoh: Warung Bu Siti / Pak Joko"
               className="w-full px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
             />
           </div>
 
           <div>
             <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-              Lokasi Pengiriman
+              Tujuan / Alamat Pengiriman
             </label>
             <input
               type="text"
               required
               value={customerLocation}
               onChange={(e) => setCustomerLocation(e.target.value)}
-              placeholder="Contoh: Terminal Cargo Soetta"
+              placeholder="Contoh: Toko Cabang Pasar Baru / Diantar ke Rumah"
               className="w-full px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
             />
           </div>
 
           <div>
             <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-              Jumlah Unit (Qty)
+              Jumlah Beli (Qty)
             </label>
             <input
               type="number"
@@ -150,9 +150,9 @@ export function NewOrderModal({ isOpen, onClose, onSuccess }: Props) {
 
           {selectedProduct && (
             <div className="p-2.5 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 flex items-center justify-between">
-              <span className="text-slate-500">Total Harga:</span>
+              <span className="text-slate-500">Total Tagihan:</span>
               <span className="font-bold text-slate-900 dark:text-white">
-                Rp {(selectedProduct.price * quantity).toLocaleString()}
+                Rp {(selectedProduct.price * quantity).toLocaleString('id-ID')}
               </span>
             </div>
           )}
@@ -187,7 +187,7 @@ export function NewOrderModal({ isOpen, onClose, onSuccess }: Props) {
               disabled={loading || !selectedProductId}
               className="px-4 py-2 bg-brandBlue hover:bg-blue-600 text-white font-bold rounded-xl shadow-md shadow-brandBlue/30 disabled:opacity-50"
             >
-              {loading ? 'Mengunci DB...' : 'Konfirmasi Pesanan'}
+              {loading ? 'Memproses Pesanan...' : 'Simpan & Catat Pesanan'}
             </button>
           </div>
         </form>

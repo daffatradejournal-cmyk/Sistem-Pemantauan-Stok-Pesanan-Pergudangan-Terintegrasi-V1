@@ -93,30 +93,30 @@ export function AnalyticsView({
         {/* Left: 2x2 KPI Cards */}
         <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <KpiCard
-            title="Orders"
+            title="Total Pesanan Toko"
             value={kpi.orders}
-            changeText="↑ 8.2% since last month"
+            changeText="↑ 8.2% dibanding bulan lalu"
             isPositiveChange={true}
             icon={<FileText className="w-4 h-4 text-brandBlue" />}
           />
           <KpiCard
-            title="Approved"
+            title="Pesanan Berhasil (Selesai)"
             value={kpi.approved}
-            changeText="↑ 3.4% since last month"
+            changeText="↑ 3.4% dibanding bulan lalu"
             isPositiveChange={true}
             icon={<CheckSquare className="w-4 h-4 text-emerald-500" />}
           />
           <KpiCard
-            title="Total Units (Fisik)"
+            title="Sisa Stok Fisik Gudang/Toko"
             value={kpi.totalUnits}
-            changeText="↓ 0.2% since last month"
+            changeText="↓ 0.2% dibanding bulan lalu"
             isPositiveChange={false}
             icon={<Boxes className="w-4 h-4 text-brandAmber" />}
           />
           <KpiCard
-            title="Blocked / Revenue"
+            title="Total Omzet Penjualan Sukses"
             value={`Rp ${kpi.revenue.toLocaleString()}`}
-            changeText="↓ 1.2% since last month"
+            changeText="↓ 1.2% dibanding bulan lalu"
             isPositiveChange={false}
             icon={<CreditCard className="w-4 h-4 text-rose-500" />}
           />
@@ -126,23 +126,23 @@ export function AnalyticsView({
         <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Donut 1 (Yellow / Amber) */}
           <SvgDonut
-            title="Stock Status"
+            title="Kondisi Stok Barang Toko"
             totalDisplay={stockDonut.total}
             segments={[
-              { label: 'Aman', value: stockDonut.safe, color: '#10B981' },
+              { label: 'Stok Aman', value: stockDonut.safe, color: '#10B981' },
               { label: 'Menipis', value: stockDonut.low, color: '#F5A623' },
-              { label: 'Habis', value: stockDonut.out, color: '#EF4444' },
+              { label: 'Habis (0)', value: stockDonut.out, color: '#EF4444' },
             ]}
           />
 
           {/* Donut 2 (Blue) */}
           <SvgDonut
-            title="Order Health"
+            title="Status Transaksi Toko"
             totalDisplay={orderDonut.total}
             segments={[
-              { label: 'Delivered', value: orderDonut.delivered, color: '#3B6EF6' },
-              { label: 'Cancelled', value: orderDonut.cancelled, color: '#60A5FA' },
-              { label: 'Processed', value: orderDonut.processed, color: '#93C5FD' },
+              { label: 'Selesai', value: orderDonut.delivered, color: '#3B6EF6' },
+              { label: 'Ditolak (Stok Habis)', value: orderDonut.cancelled, color: '#60A5FA' },
+              { label: 'Diproses', value: orderDonut.processed, color: '#93C5FD' },
             ]}
           />
         </div>
@@ -165,9 +165,9 @@ export function AnalyticsView({
             icon={<Wallet className="w-5 h-5 text-brandPurple" />}
             badgeText="+15%"
             badgeColor="purple"
-            title="Inventory Valuation"
+            title="Nilai Aset Stok Toko"
             value={kpi.inventoryValuation}
-            subtitle="Nilai Persediaan Fisik"
+            subtitle="Modal Barang Tersimpan"
             percent={68}
           />
 
@@ -175,9 +175,9 @@ export function AnalyticsView({
             icon={<Briefcase className="w-5 h-5 text-emerald-500" />}
             badgeText="+99%"
             badgeColor="green"
-            title="Realized Sales"
+            title="Omzet Kasir Masuk"
             value={kpi.revenue}
-            subtitle="Akumulasi Nilai Terkirim"
+            subtitle="Total Pendapatan Bersih"
             percent={92}
           />
         </div>

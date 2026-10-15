@@ -14,7 +14,7 @@ interface Props {
 export function KpiCard({
   title,
   value,
-  changeText = 'since last month',
+  changeText = 'dibanding bulan lalu',
   isPositiveChange = true,
   icon,
 }: Props) {

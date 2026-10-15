@@ -223,14 +223,14 @@ export function ProductsView({ onRefreshGlobal }: Props) {
           <div>
             <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
               <ScanLine className="w-5 h-5 text-brandBlue" />
-              <span>Pemindai Barcode Terintegrasi (Kamera & Hardware Scanner)</span>
+              <span>Pemindai Barcode Produk Toko (Kamera HP & Scanner USB)</span>
             </h2>
             <p className="text-xs text-slate-400">
-              Pindai fisik menggunakan kamera laptop/HP atau ketik/scan USB barcode scanner langsung ke PostgreSQL dengan row-level lock.
+              Gunakan kamera HP/laptop atau alat scanner barcode untuk mencatat barang masuk (kulakan) atau barang keluar (penjualan) secara instan.
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400 font-medium">Mode Transaksi:</span>
+            <span className="text-xs text-slate-400 font-medium">Pilih Aksi:</span>
             <div className="inline-flex rounded-xl p-1 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10">
               <button
                 type="button"
@@ -242,7 +242,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
                 }`}
               >
                 <ArrowDownCircle className="w-3.5 h-3.5" />
-                Barang Masuk (+ IN)
+                Barang Masuk / Kulakan (+ IN)
               </button>
               <button
                 type="button"
@@ -254,7 +254,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
                 }`}
               >
                 <ArrowUpCircle className="w-3.5 h-3.5" />
-                Barang Keluar (- OUT)
+                Barang Keluar / Jual Langsung (- OUT)
               </button>
             </div>
           </div>
@@ -271,14 +271,14 @@ export function ProductsView({ onRefreshGlobal }: Props) {
             <form onSubmit={handleExecuteScan} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Kode Barcode / SKU (Otomatis terisi dari kamera atau scanner USB)
+                  Kode Barcode / SKU Barang (Terisi otomatis saat kamera mendeteksi barcode)
                 </label>
                 <div className="relative">
                   <input
                     type="text"
                     value={scanSku}
                     onChange={(e) => setScanSku(e.target.value.toUpperCase())}
-                    placeholder="Contoh: SKU-LOG-001"
+                    placeholder="Contoh: BRG-BML-001"
                     className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
                     autoFocus
                   />
@@ -289,7 +289,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Kuantitas Mutasi
+                    Jumlah Barang (Pcs / Unit)
                   </label>
                   <input
                     type="number"
@@ -308,7 +308,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
                     type="text"
                     value={scanNotes}
                     onChange={(e) => setScanNotes(e.target.value)}
-                    placeholder="Misal: Penerimaan PO #8839"
+                    placeholder="Misal: Kulakan dari Agen Pasar Induk"
                     className="w-full px-4 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
                   />
                 </div>
@@ -326,12 +326,12 @@ export function ProductsView({ onRefreshGlobal }: Props) {
                 {scanAction === 'IN' ? (
                   <>
                     <ArrowDownCircle className="w-4 h-4" />
-                    <span>Eksekusi Restock Barang Masuk (+{scanQty})</span>
+                    <span>Simpan Barang Masuk / Tambah Stok (+{scanQty})</span>
                   </>
                 ) : (
                   <>
                     <ArrowUpCircle className="w-4 h-4" />
-                    <span>Eksekusi Dispatch Barang Keluar (-{scanQty})</span>
+                    <span>Catat Barang Keluar / Pengurangan Stok (-{scanQty})</span>
                   </>
                 )}
               </button>
@@ -365,10 +365,10 @@ export function ProductsView({ onRefreshGlobal }: Props) {
           <div>
             <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
               <Package className="w-5 h-5 text-brandBlue" />
-              <span>Katalog Produk Pergudangan & Visual Barcode</span>
+              <span>Katalog Produk Toko UMKM & Label Barcode</span>
             </h2>
             <p className="text-xs text-slate-400">
-              Total {products.length} produk tersimpan di database PostgreSQL. Visual Barcode dapat dipindai langsung dari layar dengan kamera HP.
+              Total {products.length} produk terdaftar di database toko. Label barcode dapat langsung dipindai dari layar HP Anda atau dicetak.
             </p>
           </div>
 
@@ -376,7 +376,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
             <button
               onClick={() => fetchProducts()}
               className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
-              title="Refresh"
+              title="Segarkan Data"
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
             </button>
@@ -385,7 +385,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
               className="px-3.5 py-2 bg-brandBlue text-white text-xs font-bold rounded-xl hover:bg-blue-600 transition-colors flex items-center gap-1.5 shadow-sm shadow-brandBlue/30"
             >
               <Plus className="w-4 h-4" />
-              <span>+ Tambah Produk Baru</span>
+              <span>+ Tambah Barang Baru</span>
             </button>
           </div>
         </div>
@@ -398,7 +398,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Cari berdasarkan nama produk, SKU, atau kategori..."
+              placeholder="Cari nama barang, kode barcode SKU, atau kategori..."
               className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
             />
           </div>
@@ -425,13 +425,13 @@ export function ProductsView({ onRefreshGlobal }: Props) {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-200/80 dark:border-white/10 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-3">Visual Barcode (SVG)</th>
-                <th className="py-3 px-3">Nama Produk & SKU</th>
+                <th className="py-3 px-3">Label Barcode (Bisa Di-scan)</th>
+                <th className="py-3 px-3">Nama Barang & SKU</th>
                 <th className="py-3 px-3">Kategori</th>
-                <th className="py-3 px-3">Harga Satuan</th>
-                <th className="py-3 px-3 text-center">Stok Fisik</th>
-                <th className="py-3 px-3 text-center">Batas Min</th>
-                <th className="py-3 px-3">Status</th>
+                <th className="py-3 px-3">Harga Jual (Pcs)</th>
+                <th className="py-3 px-3 text-center">Sisa Stok</th>
+                <th className="py-3 px-3 text-center">Batas Aman</th>
+                <th className="py-3 px-3">Kondisi</th>
                 <th className="py-3 px-3 text-right">Aksi</th>
               </tr>
             </thead>
@@ -571,9 +571,12 @@ export function ProductsView({ onRefreshGlobal }: Props) {
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-darkCard rounded-2xl p-6 max-w-md w-full border border-slate-200 dark:border-darkBorder shadow-2xl">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
-              Tambah Produk Inventaris Baru
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+              + Tambah Barang Dagangan Baru
             </h3>
+            <p className="text-xs text-slate-400 mb-4">
+              Daftarkan produk toko agar bisa langsung discan barcode dan dicatat penjualannya.
+            </p>
             <form onSubmit={handleAddProduct} className="space-y-3.5 text-xs">
               <div>
                 <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
@@ -584,7 +587,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
                   required
                   value={newSku}
                   onChange={(e) => setNewSku(e.target.value.toUpperCase())}
-                  placeholder="Contoh: SKU-WRH-901"
+                  placeholder="Contoh: BRG-009"
                   className="w-full px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl font-mono font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
                 />
               </div>
@@ -598,7 +601,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
                   required
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
-                  placeholder="Contoh: Pallet Kayu Standar Ekspor 120x100cm"
+                  placeholder="Contoh: Kopi Robusta Lampung 200g"
                   className="w-full px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
                 />
               </div>
@@ -613,14 +616,14 @@ export function ProductsView({ onRefreshGlobal }: Props) {
                     required
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
-                    placeholder="Storage & Pallet"
+                    placeholder="Sembako / Camilan"
                     className="w-full px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
                   />
                 </div>
 
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Harga (Rp)
+                    Harga Jual Satuan (Rp)
                   </label>
                   <input
                     type="number"
@@ -636,7 +639,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Stok Awal Fisik
+                    Stok Awal Fisik (Pcs)
                   </label>
                   <input
                     type="number"
@@ -650,7 +653,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
 
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Batas Minimum Alert
+                    Batas Aman Peringatan (Pcs)
                   </label>
                   <input
                     type="number"
@@ -676,7 +679,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
                   disabled={addLoading}
                   className="px-4 py-2 rounded-xl bg-brandBlue text-white font-bold hover:bg-blue-600 shadow-md shadow-brandBlue/30 disabled:opacity-50"
                 >
-                  {addLoading ? 'Menyimpan...' : 'Simpan Produk ke PostgreSQL'}
+                  {addLoading ? 'Menyimpan...' : 'Simpan Barang ke Database'}
                 </button>
               </div>
             </form>
@@ -688,8 +691,8 @@ export function ProductsView({ onRefreshGlobal }: Props) {
       {editingProduct && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white dark:bg-darkCard rounded-2xl p-6 max-w-sm w-full border border-slate-200 dark:border-darkBorder shadow-2xl">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2">
-              Edit Konfigurasi Produk
+            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1">
+              Ubah Harga & Batas Stok Toko
             </h3>
             <p className="text-xs text-slate-400 mb-4 font-medium">
               {editingProduct.name} ({editingProduct.sku})
@@ -698,7 +701,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
             <div className="space-y-3 text-xs">
               <div>
                 <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Ambang Batas Minimum Alert (Unit)
+                  Batas Aman Peringatan Stok (Pcs)
                 </label>
                 <input
                   type="number"
@@ -711,7 +714,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
 
               <div>
                 <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Harga Satuan (Rp)
+                  Harga Jual Satuan (Rp)
                 </label>
                 <input
                   type="number"
@@ -736,7 +739,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
                 onClick={handleUpdateProduct}
                 className="px-4 py-2 rounded-xl bg-brandBlue text-white font-bold hover:bg-blue-600 shadow-md shadow-brandBlue/30"
               >
-                Perbarui
+                Simpan Perubahan
               </button>
             </div>
           </div>

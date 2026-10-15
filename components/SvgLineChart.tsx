@@ -19,7 +19,7 @@ interface Props {
 export function SvgLineChart({ data, selectedYear, onYearChange }: Props) {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
-  const defaultMonths = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  const defaultMonths = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
   const chartItems = defaultMonths.map((m, idx) => {
     const found = data?.find(d => d.monthNum === idx + 1);
     return {
@@ -70,9 +70,9 @@ export function SvgLineChart({ data, selectedYear, onYearChange }: Props) {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-base font-bold text-slate-800 dark:text-white">
-            Overall Stock Activity
+            Aktivitas Mutasi Keluar-Masuk Barang
           </h3>
-          <p className="text-xs text-slate-400">Total mutasi keluar-masuk barang pergudangan</p>
+          <p className="text-xs text-slate-400">Total mutasi stok toko (kulakan masuk vs penjualan keluar)</p>
         </div>
 
         <select

@@ -18,8 +18,8 @@ interface Props {
 export function SvgBarChart({ data, selectedYear, onYearChange }: Props) {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
-  // Fallback 12 months if data is empty
-  const defaultMonths = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+  // Fallback 12 bulan dalam format Indonesia
+  const defaultMonths = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
   const chartItems = defaultMonths.map((m, idx) => {
     const found = data?.find(d => d.monthNum === idx + 1);
     return {
@@ -38,9 +38,9 @@ export function SvgBarChart({ data, selectedYear, onYearChange }: Props) {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-base font-bold text-slate-800 dark:text-white">
-            Order & Stock Dynamics
+            Grafik Omzet Penjualan Bulanan (Rp)
           </h3>
-          <p className="text-xs text-slate-400">Dinamika transaksi pesanan per bulan</p>
+          <p className="text-xs text-slate-400">Total nilai transaksi toko yang berhasil setiap bulannya</p>
         </div>
 
         <select

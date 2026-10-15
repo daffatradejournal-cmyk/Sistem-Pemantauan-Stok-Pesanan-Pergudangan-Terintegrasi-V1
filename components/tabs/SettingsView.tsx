@@ -101,10 +101,10 @@ export function SettingsView({ dbStatus, onRefreshStatus, onRefreshGlobal }: Pro
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-800 dark:text-white">
-                Status Koneksi PostgreSQL Real-Time
+                Status Koneksi Database PostgreSQL Toko
               </h2>
               <p className="text-xs text-slate-400">
-                Terhubung langsung menggunakan driver native <code>pg.Pool</code>
+                Terhubung langsung menggunakan koneksi pool PostgreSQL <code>pg.Pool</code>
               </p>
             </div>
           </div>
@@ -114,45 +114,45 @@ export function SettingsView({ dbStatus, onRefreshStatus, onRefreshGlobal }: Pro
             className="px-3 py-1.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
           >
             <RefreshCw className="w-3.5 h-3.5" />
-            <span>Tes Latensi Sekarang</span>
+            <span>Cek Kecepatan Respon</span>
           </button>
         </div>
 
         {/* Status Metrics Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
-            <span className="text-[11px] text-slate-400 font-semibold block">Konektivitas</span>
+            <span className="text-[11px] text-slate-400 font-semibold block">Status Koneksi</span>
             <div className="flex items-center gap-2 mt-1">
               {isConnected ? (
                 <>
                   <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                  <span className="text-sm font-bold text-emerald-500">TERHUBUNG (Live)</span>
+                  <span className="text-sm font-bold text-emerald-500">TERHUBUNG (Aktif)</span>
                 </>
               ) : (
                 <>
                   <XCircle className="w-4 h-4 text-rose-500" />
-                  <span className="text-sm font-bold text-rose-500">TERPUTUS / NOT CONFIGURED</span>
+                  <span className="text-sm font-bold text-rose-500">BELUM TERHUBUNG</span>
                 </>
               )}
             </div>
           </div>
 
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
-            <span className="text-[11px] text-slate-400 font-semibold block">Latensi Ping DB</span>
+            <span className="text-[11px] text-slate-400 font-semibold block">Kecepatan Respon (Ping)</span>
             <div className="text-sm font-black text-slate-900 dark:text-white mt-1 font-mono">
               {dbStatus?.status?.latencyMs !== undefined ? `${dbStatus.status.latencyMs} ms` : '-'}
             </div>
           </div>
 
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
-            <span className="text-[11px] text-slate-400 font-semibold block">Database Name</span>
+            <span className="text-[11px] text-slate-400 font-semibold block">Nama Database</span>
             <div className="text-sm font-bold text-slate-900 dark:text-white mt-1 font-mono truncate">
               {dbStatus?.status?.database || 'none'}
             </div>
           </div>
 
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-200/80 dark:border-white/10">
-            <span className="text-[11px] text-slate-400 font-semibold block">Tabel Terdeteksi</span>
+            <span className="text-[11px] text-slate-400 font-semibold block">Tabel Siap Digunakan</span>
             <div className="text-sm font-bold text-slate-900 dark:text-white mt-1">
               {dbStatus?.status?.tableCount !== undefined ? `${dbStatus.status.tableCount} / 4 Tabel` : '0 / 4 Tabel'}
             </div>
@@ -163,25 +163,25 @@ export function SettingsView({ dbStatus, onRefreshStatus, onRefreshGlobal }: Pro
         <div className="mt-4 p-3 bg-slate-100 dark:bg-black/30 rounded-xl border border-slate-200 dark:border-white/10 flex items-center justify-between text-xs">
           <div className="flex items-center gap-2 font-mono text-slate-600 dark:text-slate-300 truncate">
             <Server className="w-4 h-4 flex-shrink-0 text-brandBlue" />
-            <span className="text-slate-400">URL Aktif:</span>
+            <span className="text-slate-400">URL Database Aktif:</span>
             <span className="truncate">{dbStatus?.databaseUrl || 'postgresql://...'}</span>
           </div>
         </div>
 
         {!isConnected && (
           <div className="mt-4 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-600 dark:text-rose-400">
-            <strong>Peringatan Database:</strong> {dbStatus?.status?.error || 'Tidak dapat terhubung ke server PostgreSQL. Masukkan connection string PostgreSQL (misal Neon / Supabase) di bawah.'}
+            <strong>Pemberitahuan:</strong> {dbStatus?.status?.error || 'Database belum terhubung. Tempelkan link database PostgreSQL gratis (misal dari Neon.tech atau Supabase) di bawah.'}
           </div>
         )}
       </div>
 
       {/* SECTION 2: 1-CLICK MIGRATION & SEEDING */}
       <div className="bg-white dark:bg-darkCard rounded-2xl p-6 border border-slate-100 dark:border-darkBorder shadow-sm">
-        <h3 className="text-base font-bold text-slate-800 dark:text-white mb-2">
-          Inisialisasi Skema & Data Sampel Gudang (1-Click Setup)
+        <h3 className="text-base font-bold text-slate-800 dark:text-white mb-1">
+          Inisialisasi Tabel & Data Sampel Toko UMKM (1-Klik Siap Pakai)
         </h3>
         <p className="text-xs text-slate-400 mb-6">
-          Gunakan tombol di bawah ini untuk membuat tabel otomatis (idempoten) dan mengisi data katalog produk pergudangan, SKU barcode, transaksi pesanan, dan notifikasi stok.
+          Untuk toko baru yang baru mulai, cukup gunakan 2 tombol praktis berikut untuk langsung memulai:
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -190,10 +190,10 @@ export function SettingsView({ dbStatus, onRefreshStatus, onRefreshGlobal }: Pro
             <div>
               <div className="flex items-center gap-2 mb-2 font-bold text-sm text-slate-900 dark:text-white">
                 <Layers className="w-4 h-4 text-brandBlue" />
-                <span>Initialize / Migrate Database Tables</span>
+                <span>1. Buat Struktur Tabel Toko</span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Mengeksekusi DDL SQL otomatis (<code>CREATE TABLE IF NOT EXISTS</code>) untuk tabel <code>products</code>, <code>orders</code>, <code>stock_logs</code>, dan <code>stock_alerts</code> beserta index performa tinggi.
+                Membuat 4 tabel utama: produk barang, pesanan kasir, catatan mutasi stok, dan sistem peringatan otomatis.
               </p>
             </div>
             <button
@@ -202,7 +202,7 @@ export function SettingsView({ dbStatus, onRefreshStatus, onRefreshGlobal }: Pro
               disabled={initLoading || !isConnected}
               className="mt-4 w-full py-2.5 px-4 bg-brandBlue hover:bg-blue-600 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-brandBlue/20 disabled:opacity-50"
             >
-              {initLoading ? 'Membuat Tabel...' : 'Eksekusi Auto-Migration'}
+              {initLoading ? 'Membuat Struktur Tabel...' : 'Buat Struktur Tabel Sekarang'}
             </button>
           </div>
 
@@ -211,10 +211,10 @@ export function SettingsView({ dbStatus, onRefreshStatus, onRefreshGlobal }: Pro
             <div>
               <div className="flex items-center gap-2 mb-2 font-bold text-sm text-slate-900 dark:text-white">
                 <Sparkles className="w-4 h-4 text-brandAmber" />
-                <span>Seed Sample Warehouse Data</span>
+                <span>2. Isi Contoh Produk & Transaksi UMKM</span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                Mengisi database dengan katalog 8 produk pergudangan (Barcode Scanner, Thermal Roll, Pallet Jack, dsb.), pesanan awal, riwayat audit mutasi, dan peringatan stok menipis.
+                Langsung mengisi katalog 8 produk sembako/makanan (Minyak Bimoli, Beras Ramos, Gulaku, Kopi Robusta, dsb.) beserta transaksi awal toko.
               </p>
             </div>
             <button
@@ -223,7 +223,7 @@ export function SettingsView({ dbStatus, onRefreshStatus, onRefreshGlobal }: Pro
               disabled={seedLoading || !isConnected}
               className="mt-4 w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-amber-500/20 disabled:opacity-50"
             >
-              {seedLoading ? 'Mengisi Data...' : 'Isi Data Sampel Gudang'}
+              {seedLoading ? 'Mengisi Data Toko...' : 'Isi Data Contoh UMKM Sekarang'}
             </button>
           </div>
         </div>

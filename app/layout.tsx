@@ -2,8 +2,8 @@ import './globals.css';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'WareFlow - Sistem Pemantauan Stok & Pesanan Pergudangan',
-  description: 'Production-ready Warehouse Stock & Order Monitoring System with PostgreSQL Row-Level Locking and Barcode Scanner',
+  title: 'StokPintar UMKM - Sistem Manajemen Stok & Kasir Toko Terintegrasi',
+  description: 'Aplikasi kasir dan pencatatan stok cerdas untuk UMKM dengan pemindai barcode kamera, proteksi anti-stok minus, dan database PostgreSQL real-time.',
 };
 
 export default function RootLayout({

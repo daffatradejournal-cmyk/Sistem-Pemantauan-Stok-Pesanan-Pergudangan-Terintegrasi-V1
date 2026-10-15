@@ -88,17 +88,17 @@ export default function Home() {
   const getTabTitle = () => {
     switch (activeTab) {
       case 'analytics':
-        return 'Analytics';
+        return 'Ringkasan & Laporan Usaha';
       case 'products':
-        return 'Products & Barcode Scanner';
+        return 'Katalog Barang & Scan Barcode';
       case 'orders':
-        return 'Orders & Database Row-Locking';
+        return 'Kasir & Transaksi Penjualan';
       case 'alerts':
-        return 'Alerts & Stock Movement Logs';
+        return 'Peringatan Stok & Mutasi Barang';
       case 'settings':
-        return 'Settings & PostgreSQL Migration';
+        return 'Pengaturan Database Toko';
       default:
-        return 'Analytics';
+        return 'Ringkasan & Laporan Usaha';
     }
   };
 
