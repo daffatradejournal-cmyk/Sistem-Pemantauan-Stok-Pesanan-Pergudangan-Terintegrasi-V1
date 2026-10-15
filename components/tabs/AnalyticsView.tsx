@@ -141,7 +141,7 @@ export function AnalyticsView({
             totalDisplay={orderDonut.total}
             segments={[
               { label: 'Selesai', value: orderDonut.delivered, color: '#3B6EF6' },
-              { label: 'Ditolak (Stok Habis)', value: orderDonut.cancelled, color: '#60A5FA' },
+              { label: 'Ditolak', value: orderDonut.cancelled, color: '#EF4444' },
               { label: 'Diproses', value: orderDonut.processed, color: '#93C5FD' },
             ]}
           />
