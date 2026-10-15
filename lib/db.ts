@@ -204,6 +204,17 @@ export async function initDatabase(): Promise<{ success: boolean; message: strin
   }
 }
 
+let hasEnsuredTables = false;
+export async function ensureTablesExist(): Promise<void> {
+  if (hasEnsuredTables) return;
+  try {
+    await initDatabase();
+    hasEnsuredTables = true;
+  } catch (err) {
+    console.error('Auto migration check failed (will retry next time):', err);
+  }
+}
+
 export async function getStoreProfile(): Promise<{
   ownerName: string;
   storeName: string;

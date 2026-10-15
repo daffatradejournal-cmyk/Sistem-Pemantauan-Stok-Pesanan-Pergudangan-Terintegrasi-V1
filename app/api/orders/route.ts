@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getPool } from '@/lib/db';
+import { getPool, ensureTablesExist } from '@/lib/db';
 import { processOrderWithLock } from '@/lib/orderService';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
+  await ensureTablesExist();
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status');
   const limit = parseInt(searchParams.get('limit') || '50', 10);
@@ -67,6 +68,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    await ensureTablesExist();
     const body = await request.json();
     const { productId, customerName, customerLocation, quantity } = body;
 

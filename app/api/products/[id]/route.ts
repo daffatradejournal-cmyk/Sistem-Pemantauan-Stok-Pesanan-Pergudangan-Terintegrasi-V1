@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getPool } from '@/lib/db';
+import { getPool, ensureTablesExist } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +8,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    await ensureTablesExist();
     const id = parseInt(params.id, 10);
     if (isNaN(id)) {
       return NextResponse.json({ success: false, error: 'ID tidak valid' }, { status: 400 });

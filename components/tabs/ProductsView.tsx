@@ -161,6 +161,32 @@ export function ProductsView({ onRefreshGlobal }: Props) {
         setNewCategory('');
         fetchProducts();
         if (onRefreshGlobal) onRefreshGlobal();
+      } else if (data.error && data.error.includes('does not exist')) {
+        // Auto-heal: inisialisasi tabel otomatis jika belum ada lalu coba simpan kembali
+        await fetch('/api/db/init', { method: 'POST' });
+        const retryRes = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sku: newSku,
+            name: newName,
+            category: newCategory,
+            price: newPrice,
+            current_stock: newStock,
+            min_stock_threshold: newMinThreshold,
+          }),
+        });
+        const retryData = await retryRes.json();
+        if (retryData.success) {
+          setIsAddModalOpen(false);
+          setNewSku('');
+          setNewName('');
+          setNewCategory('');
+          fetchProducts();
+          if (onRefreshGlobal) onRefreshGlobal();
+        } else {
+          alert(retryData.error || 'Gagal menambahkan produk');
+        }
       } else {
         alert(data.error || 'Gagal menambahkan produk');
       }

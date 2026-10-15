@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getPool } from '@/lib/db';
+import { getPool, ensureTablesExist } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
+  await ensureTablesExist();
   const { searchParams } = new URL(request.url);
   const search = searchParams.get('search') || '';
   const category = searchParams.get('category') || '';
@@ -69,6 +70,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    await ensureTablesExist();
     const body = await request.json();
     const { sku, name, category, price, current_stock, min_stock_threshold } = body;
 

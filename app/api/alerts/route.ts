@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import { getPool } from '@/lib/db';
+import { getPool, ensureTablesExist } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
+  await ensureTablesExist();
   const { searchParams } = new URL(request.url);
   const status = searchParams.get('status'); // 'all', 'unresolved', 'resolved'
 
