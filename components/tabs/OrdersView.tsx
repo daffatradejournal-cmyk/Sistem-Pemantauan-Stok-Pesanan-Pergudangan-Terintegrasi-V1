@@ -28,8 +28,9 @@ export function OrdersView({ onRefreshGlobal }: { onRefreshGlobal?: () => void }
   // Single Order Form state
   const [selectedProductId, setSelectedProductId] = useState<number | ''>('');
   const [customerName, setCustomerName] = useState('');
-  const [customerLocation, setCustomerLocation] = useState('Gudang Utama Jakarta');
+  const [customerLocation, setCustomerLocation] = useState('Kasir Toko Utama');
   const [quantity, setQuantity] = useState(1);
+  const [orderDate, setOrderDate] = useState(() => new Date().toISOString().slice(0, 16));
   const [orderSubmitting, setOrderSubmitting] = useState(false);
   const [orderFeedback, setOrderFeedback] = useState<any>(null);
 
@@ -95,6 +96,7 @@ export function OrdersView({ onRefreshGlobal }: { onRefreshGlobal?: () => void }
           customerName: customerName.trim(),
           customerLocation: customerLocation.trim(),
           quantity,
+          orderDate,
         }),
       });
       const data = await res.json();
@@ -393,19 +395,32 @@ export function OrdersView({ onRefreshGlobal }: { onRefreshGlobal?: () => void }
               />
             </div>
 
-            {/* Quantity */}
-            <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Jumlah Beli (Pcs)
-              </label>
-              <input
-                type="number"
-                min="1"
-                required
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Jumlah Beli (Pcs)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  required
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Tanggal Transaksi
+                </label>
+                <input
+                  type="datetime-local"
+                  value={orderDate}
+                  onChange={(e) => setOrderDate(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
+                />
+              </div>
             </div>
 
             {/* Total Calculation */}

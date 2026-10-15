@@ -46,6 +46,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
   const [scanSku, setScanSku] = useState('');
   const [scanAction, setScanAction] = useState<'IN' | 'OUT'>('IN');
   const [scanQty, setScanQty] = useState(1);
+  const [scanDate, setScanDate] = useState(() => new Date().toISOString().slice(0, 16));
   const [scanNotes, setScanNotes] = useState('');
   const [isScanningActive, setIsScanningActive] = useState(true);
   const [scanFeedback, setScanFeedback] = useState<{
@@ -101,6 +102,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
           sku: scanSku.trim(),
           action: scanAction,
           quantity: scanQty,
+          transactionDate: scanDate,
           notes: scanNotes || `Pemindaian Barcode via Web (${scanAction === 'IN' ? 'Barang Masuk' : 'Barang Keluar'})`,
         }),
       });
@@ -312,30 +314,42 @@ export function ProductsView({ onRefreshGlobal }: Props) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Jumlah Barang (Pcs / Unit)
+                    Jumlah Barang (Pcs)
                   </label>
                   <input
                     type="number"
                     min="1"
                     value={scanQty}
                     onChange={(e) => setScanQty(parseInt(e.target.value, 10) || 1)}
-                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Catatan Mutasi (Opsional)
+                    Tanggal & Waktu Transaksi
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={scanDate}
+                    onChange={(e) => setScanDate(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Catatan / Pembeli
                   </label>
                   <input
                     type="text"
                     value={scanNotes}
                     onChange={(e) => setScanNotes(e.target.value)}
-                    placeholder="Misal: Kulakan dari Agen Pasar Induk"
-                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
+                    placeholder="Misal: Bu Siti / Kulakan Pasar"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
                   />
                 </div>
               </div>

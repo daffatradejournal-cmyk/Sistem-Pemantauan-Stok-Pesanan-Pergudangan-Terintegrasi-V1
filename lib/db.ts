@@ -1,4 +1,5 @@
 import { Pool, PoolConfig } from 'pg';
+import { cookies } from 'next/headers';
 
 let poolInstance: Pool | null = null;
 let currentConnectionString: string | null = null;
@@ -6,6 +7,18 @@ let currentConnectionString: string | null = null;
 export function getDatabaseUrl(): string {
   if (process.env.APP_DATABASE_URL_OVERRIDE) {
     return process.env.APP_DATABASE_URL_OVERRIDE;
+  }
+  try {
+    const cookieStore = cookies();
+    const cookieDbUrl = cookieStore.get('app_db_url')?.value;
+    if (cookieDbUrl) {
+      const decoded = decodeURIComponent(cookieDbUrl);
+      if (decoded.startsWith('postgres')) {
+        return decoded;
+      }
+    }
+  } catch (err) {
+    // Di luar request context
   }
   return process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/warehouse_db?sslmode=disable';
 }

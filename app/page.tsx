@@ -18,10 +18,10 @@ export default function Home() {
   // Global state
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [dbStatus, setDbStatus] = useState<any>(null);
-  const [selectedYear, setSelectedYear] = useState('2024');
+  const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear().toString());
   const [isLoading, setIsLoading] = useState(false);
 
-  // Theme initialization from localStorage
+  // Theme & DB URL initialization from localStorage
   useEffect(() => {
     const savedTheme = localStorage.getItem('warehouse_theme');
     if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -30,6 +30,18 @@ export default function Home() {
     } else {
       setIsDarkMode(false);
       document.documentElement.classList.remove('dark');
+    }
+
+    // Auto-sync database connection jika tersimpan di browser
+    const savedDbUrl = localStorage.getItem('warehouse_db_url');
+    if (savedDbUrl) {
+      fetch('/api/db/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ databaseUrl: savedDbUrl }),
+      })
+        .then(() => fetchDbStatus())
+        .catch(console.error);
     }
   }, []);
 

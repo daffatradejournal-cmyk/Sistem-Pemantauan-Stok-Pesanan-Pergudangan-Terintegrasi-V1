@@ -70,7 +70,7 @@ export async function POST(request: Request) {
   try {
     await ensureTablesExist();
     const body = await request.json();
-    const { productId, customerName, customerLocation, quantity } = body;
+    const { productId, customerName, customerLocation, quantity, orderDate } = body;
 
     const pId = parseInt(productId, 10);
     const qty = parseInt(quantity, 10);
@@ -87,6 +87,7 @@ export async function POST(request: Request) {
       customerName: customerName.trim(),
       customerLocation: customerLocation ? customerLocation.trim() : 'Gudang Utama',
       quantity: qty,
+      orderDate,
     });
 
     return NextResponse.json({

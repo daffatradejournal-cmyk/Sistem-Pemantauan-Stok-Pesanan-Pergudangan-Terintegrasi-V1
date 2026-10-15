@@ -18,7 +18,7 @@ export function CircularStatCard({
   badgeColor,
   title,
   value,
-  subtitle = 'Tahun Berjalan 2024',
+  subtitle = `Tahun Berjalan ${new Date().getFullYear()}`,
   percent,
 }: Props) {
   const radius = 18;

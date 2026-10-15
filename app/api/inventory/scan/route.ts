@@ -8,11 +8,12 @@ export async function POST(request: Request) {
   try {
     await ensureTablesExist();
     const body = await request.json();
-    const { sku, action, quantity = 1, notes = '' } = body;
+    const { sku, action, quantity = 1, notes = '', transactionDate } = body;
 
     const trimmedSku = (sku || '').trim().toUpperCase();
     const scanAction = (action || '').toUpperCase();
     const qty = parseInt(quantity, 10);
+    const txDate = transactionDate ? new Date(transactionDate) : new Date();
 
     if (!trimmedSku) {
       return NextResponse.json({ success: false, error: 'Kode Barcode / SKU wajib diisi atau dipindai!' }, { status: 400 });
@@ -32,20 +33,20 @@ export async function POST(request: Request) {
     try {
       await client.query('BEGIN');
 
-      // 1. SELECT ... FOR UPDATE by SKU
+      // Lock product row
       const productRes = await client.query(
-        `SELECT id, sku, name, current_stock, min_stock_threshold, price 
+        `SELECT id, sku, name, category, price, current_stock, min_stock_threshold 
          FROM products 
-         WHERE UPPER(sku) = $1 
+         WHERE sku = $1 
          FOR UPDATE`,
         [trimmedSku]
       );
 
-      if (productRes.rowCount === 0) {
+      if (productRes.rows.length === 0) {
         await client.query('ROLLBACK');
         return NextResponse.json({
           success: false,
-          error: `Barcode "${trimmedSku}" tidak terdaftar dalam database inventaris gudang!`,
+          error: `Produk dengan SKU / Barcode "${trimmedSku}" tidak ditemukan di database toko.`,
         }, { status: 404 });
       }
 
@@ -65,8 +66,8 @@ export async function POST(request: Request) {
 
         // Update product stock
         await client.query(
-          `UPDATE products SET current_stock = $1, updated_at = NOW() WHERE id = $2`,
-          [newStock, product.id]
+          `UPDATE products SET current_stock = $1, updated_at = $2 WHERE id = $3`,
+          [newStock, txDate, product.id]
         );
 
         // If restocked above threshold, resolve pending alerts
@@ -77,15 +78,15 @@ export async function POST(request: Request) {
              WHERE product_id = $1 AND is_resolved = false`,
             [product.id]
           );
-          alertActionMessage = 'Status alert stok kritis diselesaikan otomatis karena stok telah pulih.';
+          alertActionMessage = 'Status peringatan stok menipis diselesaikan otomatis karena stok telah pulih.';
         }
       } else {
-        // scanAction === 'OUT'
+        // scanAction === 'OUT' (Barang Keluar / Penjualan Kasir)
         if (previousStock < qty) {
           await client.query('ROLLBACK');
           return NextResponse.json({
             success: false,
-            error: `Gagal Scan Barang Keluar: Stok fisik produk ${product.name} saat ini hanya ${previousStock} unit, tidak mencukupi untuk pengeluaran ${qty} unit.`,
+            error: `Gagal Scan Barang Keluar: Sisa stok ${product.name} saat ini hanya ${previousStock} pcs, tidak mencukupi untuk pengeluaran ${qty} pcs.`,
           }, { status: 400 });
         }
 
@@ -94,34 +95,47 @@ export async function POST(request: Request) {
         qtyChange = -qty;
 
         await client.query(
-          `UPDATE products SET current_stock = $1, updated_at = NOW() WHERE id = $2`,
-          [newStock, product.id]
+          `UPDATE products SET current_stock = $1, updated_at = $2 WHERE id = $3`,
+          [newStock, txDate, product.id]
+        );
+
+        // Catat sebagai pesanan penjualan kasir agar otomatis masuk ke omzet dan dashboard!
+        const orderNumber = `SCAN-${Date.now().toString().slice(-6)}-${Math.floor(Math.random() * 900 + 100)}`;
+        const unitPrice = parseFloat(product.price) || 0;
+        const totalPrice = unitPrice * qty;
+        const customerName = notes && notes.trim() ? notes.trim() : 'Pembeli Langsung (Kasir Scan)';
+        const executionMs = Math.round((performance.now() - startTime) * 100) / 100;
+
+        await client.query(
+          `INSERT INTO orders (order_number, customer_name, customer_location, product_id, quantity, total_price, status, execution_ms, created_at)
+           VALUES ($1, $2, 'Kasir Toko (Barcode Scan)', $3, $4, $5, 'DELIVERED', $6, $7)`,
+          [orderNumber, customerName, product.id, qty, totalPrice, executionMs, txDate]
         );
 
         // Check if falls below threshold
         if (newStock === 0) {
           await client.query(
-            `INSERT INTO stock_alerts (product_id, alert_type, message)
-             VALUES ($1, 'OUT_OF_STOCK', $2)`,
-            [product.id, `ALERTA STOK HABIS: Pemindaian barcode keluar membuat ${product.name} (${product.sku}) habis total (0 unit).`]
+            `INSERT INTO stock_alerts (product_id, alert_type, message, created_at)
+             VALUES ($1, 'OUT_OF_STOCK', $2, $3)`,
+            [product.id, `PERINGATAN STOK HABIS: Pemindaian barcode keluar membuat ${product.name} (${product.sku}) habis total (0 pcs).`, txDate]
           );
-          alertActionMessage = 'Peringatan stok habis (OUT_OF_STOCK) otomatis dipicu!';
+          alertActionMessage = 'Peringatan stok habis otomatis dipicu!';
         } else if (newStock <= minThreshold) {
           await client.query(
-            `INSERT INTO stock_alerts (product_id, alert_type, message)
-             VALUES ($1, 'LOW_STOCK', $2)`,
-            [product.id, `PERINGATAN STOK MENIPIS: Stok ${product.name} (${product.sku}) menyentuh ${newStock} unit (Batas min: ${minThreshold}).`]
+            `INSERT INTO stock_alerts (product_id, alert_type, message, created_at)
+             VALUES ($1, 'LOW_STOCK', $2, $3)`,
+            [product.id, `PERINGATAN STOK MENIPIS: Stok ${product.name} (${product.sku}) menyentuh ${newStock} pcs (Batas min: ${minThreshold} pcs).`, txDate]
           );
-          alertActionMessage = 'Peringatan stok menipis (LOW_STOCK) otomatis dipicu!';
+          alertActionMessage = 'Peringatan stok menipis otomatis dipicu!';
         }
       }
 
-      // Record to audit trail
-      const noteText = notes.trim() || `Barcode Scan ${scanAction === 'IN' ? 'Barang Masuk (Restock)' : 'Barang Keluar (Dispatch)'}`;
+      // Record to audit trail / mutasi barang
+      const noteText = notes.trim() || `Barcode Scan ${scanAction === 'IN' ? 'Barang Masuk (Kulakan)' : 'Barang Keluar (Penjualan Kasir)'}`;
       await client.query(
-        `INSERT INTO stock_logs (product_id, sku, change_type, quantity_change, previous_stock, new_stock, notes)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [product.id, product.sku, logType, qtyChange, previousStock, newStock, noteText]
+        `INSERT INTO stock_logs (product_id, sku, change_type, quantity_change, previous_stock, new_stock, notes, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [product.id, product.sku, logType, qtyChange, previousStock, newStock, noteText, txDate]
       );
 
       await client.query('COMMIT');
@@ -144,6 +158,7 @@ export async function POST(request: Request) {
           quantityChanged: qtyChange,
           alertStatus: alertActionMessage,
           executionMs: durationMs,
+          transactionDate: txDate.toISOString(),
         },
       });
     } catch (err: any) {
@@ -153,9 +168,9 @@ export async function POST(request: Request) {
       client.release();
     }
   } catch (err: any) {
-    return NextResponse.json({
-      success: false,
-      error: err.message || 'Gagal memproses pemindaian barcode ke database',
-    }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: err.message || 'Gagal memproses pemindaian barcode' },
+      { status: 500 }
+    );
   }
 }

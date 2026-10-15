@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Database,
   CheckCircle2,
@@ -32,6 +32,13 @@ export function SettingsView({ dbStatus, onRefreshStatus, onRefreshGlobal }: Pro
   const [seedLoading, setSeedLoading] = useState(false);
   const [seedFeedback, setSeedFeedback] = useState<any>(null);
 
+  useEffect(() => {
+    const saved = localStorage.getItem('warehouse_db_url');
+    if (saved) {
+      setCustomDbUrl(saved);
+    }
+  }, []);
+
   const handleApplyCustomUrl = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customDbUrl.trim()) return;
@@ -46,6 +53,9 @@ export function SettingsView({ dbStatus, onRefreshStatus, onRefreshGlobal }: Pro
       });
       const data = await res.json();
       setConfigFeedback(data);
+      if (data.success) {
+        localStorage.setItem('warehouse_db_url', customDbUrl.trim());
+      }
       onRefreshStatus();
       if (onRefreshGlobal) onRefreshGlobal();
     } catch (err: any) {

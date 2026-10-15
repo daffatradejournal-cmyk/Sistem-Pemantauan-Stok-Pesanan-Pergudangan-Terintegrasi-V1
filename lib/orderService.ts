@@ -5,6 +5,7 @@ export interface OrderInput {
   customerName: string;
   customerLocation?: string;
   quantity: number;
+  orderDate?: string | Date;
 }
 
 export interface OrderResult {
@@ -32,6 +33,7 @@ export async function processOrderWithLock(input: OrderInput): Promise<OrderResu
   const timestampSuffix = Math.floor(1000 + Math.random() * 9000);
   const orderNumber = `ORD-${Date.now()}-${timestampSuffix}`;
   const customerLoc = input.customerLocation || 'Gudang Utama';
+  const txDate = input.orderDate ? new Date(input.orderDate) : new Date();
 
   let productSnapshot: {
     id: number;
@@ -78,22 +80,22 @@ export async function processOrderWithLock(input: OrderInput): Promise<OrderResu
 
       // Update stock
       await client.query(
-        `UPDATE products SET current_stock = $1, updated_at = NOW() WHERE id = $2`,
-        [newStock, productSnapshot.id]
+        `UPDATE products SET current_stock = $1, updated_at = $2 WHERE id = $3`,
+        [newStock, txDate, productSnapshot.id]
       );
 
       // Record successful order in DB
       const execMs = Math.round((performance.now() - startTime) * 100) / 100;
       await client.query(
         `INSERT INTO orders (order_number, customer_name, customer_location, product_id, quantity, total_price, status, execution_ms, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, 'DELIVERED', $7, NOW())`,
-        [orderNumber, input.customerName, customerLoc, productSnapshot.id, requestedQty, totalPrice, execMs]
+         VALUES ($1, $2, $3, $4, $5, $6, 'DELIVERED', $7, $8)`,
+        [orderNumber, input.customerName, customerLoc, productSnapshot.id, requestedQty, totalPrice, execMs, txDate]
       );
 
       // Record audit log
       await client.query(
-        `INSERT INTO stock_logs (product_id, sku, change_type, quantity_change, previous_stock, new_stock, notes)
-         VALUES ($1, $2, 'ORDER_DEDUCTION', $3, $4, $5, $6)`,
+        `INSERT INTO stock_logs (product_id, sku, change_type, quantity_change, previous_stock, new_stock, notes, created_at)
+         VALUES ($1, $2, 'ORDER_DEDUCTION', $3, $4, $5, $6, $7)`,
         [
           productSnapshot.id,
           productSnapshot.sku,
@@ -101,6 +103,7 @@ export async function processOrderWithLock(input: OrderInput): Promise<OrderResu
           previousStock,
           newStock,
           `Pesanan Berhasil: ${orderNumber} (${input.customerName})`,
+          txDate,
         ]
       );
 

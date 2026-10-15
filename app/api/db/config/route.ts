@@ -26,11 +26,20 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: `Berhasil terhubung ke database (${test.database}) dengan latensi ${test.latencyMs}ms!`,
       test,
     });
+
+    // Simpan di cookie browser agar persisten di seluruh serverless lambda Vercel
+    response.cookies.set('app_db_url', encodeURIComponent(databaseUrl.trim()), {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365, // 1 tahun
+      sameSite: 'lax',
+    });
+
+    return response;
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
