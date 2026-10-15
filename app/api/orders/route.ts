@@ -26,6 +26,8 @@ export async function GET(request: Request) {
         p.id as product_id,
         p.name as product_name,
         p.sku as product_sku,
+        p.price as product_price,
+        p.cost_price as product_cost_price,
         p.current_stock as live_product_stock
       FROM orders o
       JOIN products p ON o.product_id = p.id
@@ -45,21 +47,30 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       success: true,
-      orders: res.rows.map(r => ({
-        id: r.id,
-        orderNumber: r.order_number,
-        customerName: r.customer_name,
-        customerLocation: r.customer_location,
-        productId: r.product_id,
-        productName: r.product_name,
-        productSku: r.product_sku,
-        liveProductStock: r.live_product_stock,
-        quantity: r.quantity,
-        totalPrice: parseFloat(r.total_price),
-        status: r.status,
-        executionMs: parseFloat(r.execution_ms),
-        createdAt: r.created_at,
-      })),
+      orders: res.rows.map(r => {
+        const totalPrice = parseFloat(r.total_price) || 0;
+        const unitCost = parseFloat(r.product_cost_price) || 0;
+        const totalCost = unitCost * r.quantity;
+        const netProfit = totalPrice - totalCost;
+        return {
+          id: r.id,
+          orderNumber: r.order_number,
+          customerName: r.customer_name,
+          customerLocation: r.customer_location,
+          productId: r.product_id,
+          productName: r.product_name,
+          productSku: r.product_sku,
+          liveProductStock: r.live_product_stock,
+          quantity: r.quantity,
+          totalPrice,
+          unitCost,
+          totalCost,
+          netProfit,
+          status: r.status,
+          executionMs: parseFloat(r.execution_ms),
+          createdAt: r.created_at,
+        };
+      }),
     });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });

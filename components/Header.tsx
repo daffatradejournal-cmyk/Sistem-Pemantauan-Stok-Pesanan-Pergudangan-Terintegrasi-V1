@@ -134,11 +134,6 @@ export function Header({
               {profile.storeName} — Sistem Inventaris & Kasir Usaha Mikro, Kecil, dan Menengah
             </p>
           </div>
-
-          <div className="hidden xl:flex items-center gap-2 bg-slate-100 dark:bg-darkCard px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-darkBorder text-xs text-slate-600 dark:text-slate-300 font-medium ml-2">
-            <Calendar className="w-3.5 h-3.5 text-brandBlue" />
-            <span>Tahun Berjalan {new Date().getFullYear()}</span>
-          </div>
         </div>
 
         {/* Right Controls */}

@@ -557,8 +557,15 @@ export function OrdersView({ onRefreshGlobal }: { onRefreshGlobal?: () => void }
                             </span>
                           )}
                         </td>
-                        <td className="py-2.5 px-2 text-right font-bold text-slate-900 dark:text-white">
-                          Rp {ord.totalPrice.toLocaleString()}
+                        <td className="py-2.5 px-2 text-right">
+                          <span className="font-bold text-slate-900 dark:text-white block">
+                            Rp {ord.totalPrice.toLocaleString()}
+                          </span>
+                          {isDelivered && ord.netProfit !== undefined && (
+                            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 block">
+                              +Rp {ord.netProfit.toLocaleString()} (Untung)
+                            </span>
+                          )}
                         </td>
                       </tr>
                     );

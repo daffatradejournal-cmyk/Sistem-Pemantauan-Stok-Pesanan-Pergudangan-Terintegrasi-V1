@@ -165,11 +165,23 @@ export function NewOrderModal({ isOpen, onClose, onSuccess }: Props) {
           </div>
 
           {selectedProduct && (
-            <div className="p-2.5 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 flex items-center justify-between">
-              <span className="text-slate-500">Total Tagihan:</span>
-              <span className="font-bold text-slate-900 dark:text-white">
-                Rp {(selectedProduct.price * quantity).toLocaleString('id-ID')}
-              </span>
+            <div className="p-3 bg-slate-50 dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 font-medium">Total Tagihan (Harga Jual):</span>
+                <span className="font-bold text-sm text-slate-900 dark:text-white">
+                  Rp {(selectedProduct.price * quantity).toLocaleString('id-ID')}
+                </span>
+              </div>
+              {selectedProduct.costPrice !== undefined && (
+                <div className="flex items-center justify-between text-[11px] pt-1.5 border-t border-slate-200/60 dark:border-white/10">
+                  <span className="text-slate-400">
+                    Modal: Rp {((selectedProduct.costPrice || 0) * quantity).toLocaleString('id-ID')}
+                  </span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    Untung: +Rp {(((selectedProduct.price || 0) - (selectedProduct.costPrice || 0)) * quantity).toLocaleString('id-ID')}
+                  </span>
+                </div>
+              )}
             </div>
           )}
 

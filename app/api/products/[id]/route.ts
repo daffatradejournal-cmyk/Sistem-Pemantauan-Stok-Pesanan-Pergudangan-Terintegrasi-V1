@@ -15,7 +15,9 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, category, price, min_stock_threshold } = body;
+    const { name, category, price, cost_price, costPrice, min_stock_threshold } = body;
+
+    const parsedCost = cost_price !== undefined ? parseFloat(cost_price) : (costPrice !== undefined ? parseFloat(costPrice) : null);
 
     const pool = getPool();
     const res = await pool.query(
@@ -24,11 +26,19 @@ export async function PUT(
          name = COALESCE($1, name),
          category = COALESCE($2, category),
          price = COALESCE($3, price),
-         min_stock_threshold = COALESCE($4, min_stock_threshold),
+         cost_price = COALESCE($4, cost_price),
+         min_stock_threshold = COALESCE($5, min_stock_threshold),
          updated_at = NOW()
-       WHERE id = $5
+       WHERE id = $6
        RETURNING *`,
-      [name, category, price ? parseFloat(price) : null, min_stock_threshold ? parseInt(min_stock_threshold, 10) : null, id]
+      [
+        name,
+        category,
+        price !== undefined ? parseFloat(price) : null,
+        parsedCost,
+        min_stock_threshold !== undefined ? parseInt(min_stock_threshold, 10) : null,
+        id,
+      ]
     );
 
     if (res.rowCount === 0) {

@@ -126,11 +126,14 @@ export async function initDatabase(): Promise<{ success: boolean; message: strin
         name VARCHAR(255) NOT NULL,
         category VARCHAR(100) NOT NULL,
         price NUMERIC(12, 2) NOT NULL DEFAULT 0,
+        cost_price NUMERIC(12, 2) NOT NULL DEFAULT 0,
         current_stock INTEGER NOT NULL DEFAULT 0 CHECK (current_stock >= 0),
         min_stock_threshold INTEGER NOT NULL DEFAULT 5,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
+
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS cost_price NUMERIC(12, 2) NOT NULL DEFAULT 0;
     `);
 
     // 2. Table orders
@@ -333,6 +336,7 @@ export async function seedDatabase(): Promise<{ success: boolean; message: strin
         name: 'Minyak Goreng Sawit Bimoli Pouch 2 Liter',
         category: 'Sembako & Minyak',
         price: 36000,
+        cost_price: 30000,
         stock: 45,
         min: 10,
       },
@@ -341,6 +345,7 @@ export async function seedDatabase(): Promise<{ success: boolean; message: strin
         name: 'Beras Pandan Wangi Super Ramos 5 Kg',
         category: 'Bahan Pokok & Beras',
         price: 74000,
+        cost_price: 64000,
         stock: 30,
         min: 8,
       },
@@ -349,6 +354,7 @@ export async function seedDatabase(): Promise<{ success: boolean; message: strin
         name: 'Gula Pasir Kristal Putih Gulaku 1 Kg',
         category: 'Sembako & Pemanis',
         price: 18500,
+        cost_price: 15500,
         stock: 4, // Stok menipis untuk demo alert
         min: 10,
       },
@@ -357,6 +363,7 @@ export async function seedDatabase(): Promise<{ success: boolean; message: strin
         name: 'Kopi Bubuk Robusta Asli Dampit 250 Gram',
         category: 'Kopi & Minuman',
         price: 28000,
+        cost_price: 21000,
         stock: 0, // Stok habis untuk demo alert out of stock
         min: 5,
       },
@@ -365,6 +372,7 @@ export async function seedDatabase(): Promise<{ success: boolean; message: strin
         name: 'Tepung Terigu Serbaguna Segitiga Biru 1 Kg',
         category: 'Bahan Kue & Dapur',
         price: 13500,
+        cost_price: 10500,
         stock: 60,
         min: 15,
       },
@@ -373,6 +381,7 @@ export async function seedDatabase(): Promise<{ success: boolean; message: strin
         name: 'Keripik Singkong Balado Pedas Manis UMKM 200g',
         category: 'Snack & Camilan UMKM',
         price: 16000,
+        cost_price: 11000,
         stock: 25,
         min: 6,
       },
@@ -381,6 +390,7 @@ export async function seedDatabase(): Promise<{ success: boolean; message: strin
         name: 'Teh Celup Melati Sosro Kotak Isi 30 Kantong',
         category: 'Kopi & Minuman',
         price: 7500,
+        cost_price: 5500,
         stock: 3, // Stok menipis untuk demo alert
         min: 8,
       },
@@ -389,24 +399,26 @@ export async function seedDatabase(): Promise<{ success: boolean; message: strin
         name: 'Sabun Cuci Piring Sunlight Jeruk Nipis 750 ml',
         category: 'Kebutuhan Toko & Rumah',
         price: 17000,
+        cost_price: 13000,
         stock: 40,
         min: 10,
       },
     ];
 
-    const insertedProducts: Array<{ id: number; sku: string; price: number; stock: number; min: number; name: string }> = [];
+    const insertedProducts: Array<{ id: number; sku: string; price: number; cost_price: number; stock: number; min: number; name: string }> = [];
 
     for (const p of sampleProducts) {
       const res = await client.query(
-        `INSERT INTO products (sku, name, category, price, current_stock, min_stock_threshold)
-         VALUES ($1, $2, $3, $4, $5, $6)
-         RETURNING id, sku, price, current_stock, min_stock_threshold, name`,
-        [p.sku, p.name, p.category, p.price, p.stock, p.min]
+        `INSERT INTO products (sku, name, category, price, cost_price, current_stock, min_stock_threshold)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         RETURNING id, sku, price, cost_price, current_stock, min_stock_threshold, name`,
+        [p.sku, p.name, p.category, p.price, p.cost_price, p.stock, p.min]
       );
       insertedProducts.push({
         id: res.rows[0].id,
         sku: res.rows[0].sku,
         price: Number(res.rows[0].price),
+        cost_price: Number(res.rows[0].cost_price),
         stock: res.rows[0].current_stock,
         min: res.rows[0].min_stock_threshold,
         name: res.rows[0].name,

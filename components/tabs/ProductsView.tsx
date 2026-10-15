@@ -25,6 +25,9 @@ export interface ProductItem {
   name: string;
   category: string;
   price: number;
+  costPrice?: number;
+  profitPerUnit?: number;
+  marginPercent?: number;
   currentStock: number;
   minStockThreshold: number;
   stockStatus: 'SAFE' | 'LOW_STOCK' | 'OUT_OF_STOCK';
@@ -59,7 +62,8 @@ export function ProductsView({ onRefreshGlobal }: Props) {
   const [newSku, setNewSku] = useState('');
   const [newName, setNewName] = useState('');
   const [newCategory, setNewCategory] = useState('');
-  const [newPrice, setNewPrice] = useState(100000);
+  const [newCostPrice, setNewCostPrice] = useState(25000);
+  const [newPrice, setNewPrice] = useState(30000);
   const [newStock, setNewStock] = useState(10);
   const [newMinThreshold, setNewMinThreshold] = useState(5);
   const [addLoading, setAddLoading] = useState(false);
@@ -67,6 +71,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
   // Edit Threshold Modal
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
   const [editThreshold, setEditThreshold] = useState(5);
+  const [editCostPrice, setEditCostPrice] = useState(0);
   const [editPrice, setEditPrice] = useState(0);
 
   const fetchProducts = async () => {
@@ -150,6 +155,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
           name: newName,
           category: newCategory,
           price: newPrice,
+          cost_price: newCostPrice,
           current_stock: newStock,
           min_stock_threshold: newMinThreshold,
         }),
@@ -174,6 +180,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
             name: newName,
             category: newCategory,
             price: newPrice,
+            cost_price: newCostPrice,
             current_stock: newStock,
             min_stock_threshold: newMinThreshold,
           }),
@@ -209,6 +216,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
         body: JSON.stringify({
           min_stock_threshold: editThreshold,
           price: editPrice,
+          cost_price: editCostPrice,
         }),
       });
       const data = await res.json();
@@ -468,7 +476,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
                 <th className="py-3 px-3">Label Barcode (Bisa Di-scan)</th>
                 <th className="py-3 px-3">Nama Barang & SKU</th>
                 <th className="py-3 px-3">Kategori</th>
-                <th className="py-3 px-3">Harga Jual (Pcs)</th>
+                <th className="py-3 px-3">Harga Jual & Modal</th>
                 <th className="py-3 px-3 text-center">Sisa Stok</th>
                 <th className="py-3 px-3 text-center">Batas Aman</th>
                 <th className="py-3 px-3">Kondisi</th>
@@ -481,6 +489,10 @@ export function ProductsView({ onRefreshGlobal }: Props) {
                   const isSafe = p.stockStatus === 'SAFE';
                   const isLow = p.stockStatus === 'LOW_STOCK';
                   const isOut = p.stockStatus === 'OUT_OF_STOCK';
+
+                  const unitCost = p.costPrice || 0;
+                  const unitProfit = p.profitPerUnit ?? Math.max(0, p.price - unitCost);
+                  const marginPct = p.marginPercent ?? (p.price > 0 ? Math.round((unitProfit / p.price) * 100) : 0);
 
                   return (
                     <tr
@@ -515,9 +527,17 @@ export function ProductsView({ onRefreshGlobal }: Props) {
                         </span>
                       </td>
 
-                      {/* Price */}
-                      <td className="py-3 px-3 font-semibold text-slate-900 dark:text-white">
-                        Rp {p.price.toLocaleString()}
+                      {/* Price & Cost */}
+                      <td className="py-3 px-3">
+                        <div className="font-bold text-slate-900 dark:text-white">
+                          Rp {p.price.toLocaleString()}
+                          <span className="text-[10px] font-normal text-slate-400 block">
+                            Modal: Rp {unitCost.toLocaleString()}
+                          </span>
+                        </div>
+                        <span className="inline-block mt-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                          +Rp {unitProfit.toLocaleString()} ({marginPct}%)
+                        </span>
                       </td>
 
                       {/* Current Stock */}
@@ -575,6 +595,7 @@ export function ProductsView({ onRefreshGlobal }: Props) {
                             onClick={() => {
                               setEditingProduct(p);
                               setEditThreshold(p.minStockThreshold);
+                              setEditCostPrice(p.costPrice || 0);
                               setEditPrice(p.price);
                             }}
                             title="Edit Ambang Batas & Harga"
@@ -646,19 +667,36 @@ export function ProductsView({ onRefreshGlobal }: Props) {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Kategori Produk
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  placeholder="Contoh: Sembako / Minuman / Camilan"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
+                />
+              </div>
+
+              {/* Harga Modal vs Harga Jual */}
+              <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/10">
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    Kategori
+                    Harga Modal / Beli (Rp)
                   </label>
                   <input
-                    type="text"
+                    type="number"
+                    min="0"
                     required
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    placeholder="Sembako / Camilan"
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
+                    value={newCostPrice}
+                    onChange={(e) => setNewCostPrice(parseFloat(e.target.value) || 0)}
+                    placeholder="Contoh: 25000"
+                    className="w-full px-3 py-2 bg-white dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue font-semibold"
                   />
+                  <span className="text-[10px] text-slate-400 block mt-0.5">Biaya kulakan / HPP</span>
                 </div>
 
                 <div>
@@ -671,8 +709,18 @@ export function ProductsView({ onRefreshGlobal }: Props) {
                     required
                     value={newPrice}
                     onChange={(e) => setNewPrice(parseFloat(e.target.value) || 0)}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
+                    placeholder="Contoh: 30000"
+                    className="w-full px-3 py-2 bg-white dark:bg-darkCard border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue font-semibold"
                   />
+                  <span className="text-[10px] text-slate-400 block mt-0.5">Harga ke pembeli</span>
+                </div>
+
+                {/* Profit Preview Indicator */}
+                <div className="col-span-2 pt-1 text-[11px] flex items-center justify-between border-t border-slate-200 dark:border-white/10">
+                  <span className="text-slate-500">Estimasi Untung Bersih:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    +Rp {Math.max(0, newPrice - newCostPrice).toLocaleString()} / pcs ({newPrice > 0 ? Math.round(((newPrice - newCostPrice) / newPrice) * 100) : 0}%)
+                  </span>
                 </div>
               </div>
 
@@ -754,6 +802,20 @@ export function ProductsView({ onRefreshGlobal }: Props) {
 
               <div>
                 <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Harga Modal / Beli Satuan (Rp)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={editCostPrice}
+                  onChange={(e) => setEditCostPrice(parseFloat(e.target.value) || 0)}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue font-semibold"
+                />
+                <span className="text-[10px] text-slate-400 block mt-0.5">Biaya kulakan dari distributor</span>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Harga Jual Satuan (Rp)
                 </label>
                 <input
@@ -761,8 +823,16 @@ export function ProductsView({ onRefreshGlobal }: Props) {
                   min="0"
                   value={editPrice}
                   onChange={(e) => setEditPrice(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brandBlue font-semibold"
                 />
+                <span className="text-[10px] text-slate-400 block mt-0.5">Harga jual ke pembeli toko</span>
+              </div>
+
+              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 flex items-center justify-between text-[11px]">
+                <span className="text-slate-500">Estimasi Untung:</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                  +Rp {Math.max(0, editPrice - editCostPrice).toLocaleString()} / pcs ({editPrice > 0 ? Math.round(((editPrice - editCostPrice) / editPrice) * 100) : 0}%)
+                </span>
               </div>
             </div>
 

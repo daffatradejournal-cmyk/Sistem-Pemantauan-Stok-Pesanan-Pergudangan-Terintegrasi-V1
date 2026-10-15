@@ -18,6 +18,7 @@ export async function GET(request: Request) {
         p.name,
         p.category,
         p.price,
+        p.cost_price,
         p.current_stock,
         p.min_stock_threshold,
         p.created_at,
@@ -49,19 +50,28 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       success: true,
-      products: res.rows.map(r => ({
-        id: r.id,
-        sku: r.sku,
-        name: r.name,
-        category: r.category,
-        price: parseFloat(r.price),
-        currentStock: r.current_stock,
-        minStockThreshold: r.min_stock_threshold,
-        stockStatus: r.stock_status,
-        totalOrderedTimes: parseInt(r.total_ordered_times, 10) || 0,
-        createdAt: r.created_at,
-        updatedAt: r.updated_at,
-      })),
+      products: res.rows.map(r => {
+        const price = parseFloat(r.price) || 0;
+        const costPrice = parseFloat(r.cost_price) || 0;
+        const profitPerUnit = Math.max(0, price - costPrice);
+        const marginPercent = price > 0 ? (profitPerUnit / price) * 100 : 0;
+        return {
+          id: r.id,
+          sku: r.sku,
+          name: r.name,
+          category: r.category,
+          price,
+          costPrice,
+          profitPerUnit,
+          marginPercent: Math.round(marginPercent * 10) / 10,
+          currentStock: r.current_stock,
+          minStockThreshold: r.min_stock_threshold,
+          stockStatus: r.stock_status,
+          totalOrderedTimes: parseInt(r.total_ordered_times, 10) || 0,
+          createdAt: r.created_at,
+          updatedAt: r.updated_at,
+        };
+      }),
     });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
@@ -72,7 +82,7 @@ export async function POST(request: Request) {
   try {
     await ensureTablesExist();
     const body = await request.json();
-    const { sku, name, category, price, current_stock, min_stock_threshold } = body;
+    const { sku, name, category, price, cost_price, costPrice, current_stock, min_stock_threshold } = body;
 
     if (!sku || !name || !category) {
       return NextResponse.json(
@@ -90,12 +100,13 @@ export async function POST(request: Request) {
       const initialStock = parseInt(current_stock, 10) || 0;
       const minThreshold = parseInt(min_stock_threshold, 10) || 5;
       const productPrice = parseFloat(price) || 0;
+      const productCostPrice = parseFloat(cost_price ?? costPrice ?? 0) || 0;
 
       const insertRes = await client.query(
-        `INSERT INTO products (sku, name, category, price, current_stock, min_stock_threshold)
-         VALUES ($1, $2, $3, $4, $5, $6)
+        `INSERT INTO products (sku, name, category, price, cost_price, current_stock, min_stock_threshold)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
          RETURNING *`,
-        [sku.trim().toUpperCase(), name.trim(), category.trim(), productPrice, initialStock, minThreshold]
+        [sku.trim().toUpperCase(), name.trim(), category.trim(), productPrice, productCostPrice, initialStock, minThreshold]
       );
 
       const created = insertRes.rows[0];

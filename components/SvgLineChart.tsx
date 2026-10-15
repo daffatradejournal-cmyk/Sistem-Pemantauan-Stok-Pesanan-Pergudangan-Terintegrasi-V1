@@ -16,6 +16,8 @@ interface Props {
   onYearChange: (year: string) => void;
 }
 
+const YEARS = Array.from({ length: 2100 - 2024 + 1 }, (_, i) => (2024 + i).toString());
+
 export function SvgLineChart({ data, selectedYear, onYearChange }: Props) {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
@@ -81,9 +83,11 @@ export function SvgLineChart({ data, selectedYear, onYearChange }: Props) {
           aria-label="Pilih Tahun Aktivitas Stok"
           className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-xs font-semibold rounded-lg px-2.5 py-1.5 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brandPurple cursor-pointer"
         >
-          <option value="2026">2026</option>
-          <option value="2025">2025</option>
-          <option value="2024">2024</option>
+          {YEARS.map((y) => (
+            <option key={y} value={y}>
+              Tahun {y}
+            </option>
+          ))}
         </select>
       </div>
 

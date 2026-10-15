@@ -20,8 +20,11 @@ export async function GET(request: Request) {
           (SELECT COUNT(*) FROM orders WHERE status = 'DELIVERED') as approved_orders,
           (SELECT COALESCE(SUM(current_stock), 0) FROM products) as total_units,
           (SELECT COALESCE(SUM(total_price), 0) FROM orders WHERE status = 'DELIVERED') as total_revenue,
+          (SELECT COALESCE(SUM(o.quantity * COALESCE(p.cost_price, 0)), 0) FROM orders o JOIN products p ON o.product_id = p.id WHERE o.status = 'DELIVERED') as total_cost,
+          (SELECT COALESCE(SUM(o.total_price - (o.quantity * COALESCE(p.cost_price, 0))), 0) FROM orders o JOIN products p ON o.product_id = p.id WHERE o.status = 'DELIVERED') as net_profit,
           (SELECT COUNT(*) FROM orders WHERE status = 'CANCELLED') as blocked_orders,
           (SELECT COALESCE(SUM(current_stock * price), 0) FROM products) as inventory_valuation,
+          (SELECT COALESCE(SUM(current_stock * cost_price), 0) FROM products) as inventory_valuation_cost,
           (SELECT COUNT(*) FROM stock_alerts WHERE is_resolved = false) as active_alerts_count
       `);
 
@@ -45,7 +48,7 @@ export async function GET(request: Request) {
         FROM orders
       `);
 
-      // 4. Bar Chart: Sales & Stock Dynamics per month (1 to 12)
+      // 4. Bar Chart: Sales & Profit Dynamics per month (1 to 12)
       const monthlyRes = await client.query(`
         WITH months AS (
           SELECT generate_series(1, 12) AS m
@@ -54,11 +57,14 @@ export async function GET(request: Request) {
           to_char(to_date(m::text, 'MM'), 'Mon') as month_name,
           m as month_num,
           COALESCE(SUM(o.total_price), 0) as total_sales,
+          COALESCE(SUM(o.quantity * COALESCE(p.cost_price, 0)), 0) as total_cost,
+          COALESCE(SUM(o.total_price - (o.quantity * COALESCE(p.cost_price, 0))), 0) as net_profit,
           COALESCE(COUNT(o.id), 0) as order_count
         FROM months
         LEFT JOIN orders o ON EXTRACT(MONTH FROM o.created_at) = m 
           AND EXTRACT(YEAR FROM o.created_at) = $1
           AND o.status = 'DELIVERED'
+        LEFT JOIN products p ON o.product_id = p.id
         GROUP BY m
         ORDER BY m ASC
       `, [year]);
@@ -113,8 +119,11 @@ export async function GET(request: Request) {
             approved: parseInt(kpi.approved_orders, 10) || 0,
             totalUnits: parseInt(kpi.total_units, 10) || 0,
             revenue: parseFloat(kpi.total_revenue) || 0,
+            totalCost: parseFloat(kpi.total_cost) || 0,
+            netProfit: parseFloat(kpi.net_profit) || 0,
             blockedOrders: parseInt(kpi.blocked_orders, 10) || 0,
             inventoryValuation: parseFloat(kpi.inventory_valuation) || 0,
+            inventoryValuationCost: parseFloat(kpi.inventory_valuation_cost) || 0,
             activeAlertsCount: parseInt(kpi.active_alerts_count, 10) || 0,
           },
           donuts: {
@@ -135,6 +144,8 @@ export async function GET(request: Request) {
             month: r.month_name,
             monthNum: Number(r.month_num),
             sales: parseFloat(r.total_sales) || 0,
+            cost: parseFloat(r.total_cost) || 0,
+            netProfit: parseFloat(r.net_profit) || 0,
             orders: parseInt(r.order_count, 10) || 0,
           })),
           stockActivity: stockActivityRes.rows.map(r => ({
