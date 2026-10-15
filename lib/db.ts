@@ -74,7 +74,7 @@ export async function testConnection(): Promise<{
         SELECT table_name 
         FROM information_schema.tables 
         WHERE table_schema = 'public' 
-        AND table_name IN ('products', 'orders', 'stock_logs', 'stock_alerts')
+        AND table_name IN ('products', 'orders', 'stock_logs', 'stock_alerts', 'store_profile')
       `);
       const latencyMs = Math.round((performance.now() - start) * 10) / 10;
       const tables = tableRes.rows.map(r => r.table_name);
@@ -163,6 +163,23 @@ export async function initDatabase(): Promise<{ success: boolean; message: strin
       );
     `);
 
+    // 5. Table store_profile (Profil Pemilik Toko UMKM)
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS store_profile (
+        id SERIAL PRIMARY KEY,
+        owner_name VARCHAR(255) NOT NULL DEFAULT 'Muhammad',
+        store_name VARCHAR(255) NOT NULL DEFAULT 'StokPintar UMKM',
+        role_title VARCHAR(100) NOT NULL DEFAULT 'Pemilik Usaha (UMKM)',
+        avatar_url TEXT DEFAULT '',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      );
+
+      INSERT INTO store_profile (id, owner_name, store_name, role_title, avatar_url)
+      VALUES (1, 'Muhammad', 'StokPintar UMKM', 'Pemilik Usaha (UMKM)', '')
+      ON CONFLICT (id) DO NOTHING;
+    `);
+
     // Create useful indexes for high performance
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_products_sku ON products(sku);
@@ -176,8 +193,8 @@ export async function initDatabase(): Promise<{ success: boolean; message: strin
 
     return {
       success: true,
-      message: 'Semua 4 tabel (products, orders, stock_logs, stock_alerts) dan index berhasil diinisialisasi!',
-      tables: ['products', 'orders', 'stock_logs', 'stock_alerts'],
+      message: 'Semua 5 tabel (products, orders, stock_logs, stock_alerts, store_profile) dan index berhasil diinisialisasi!',
+      tables: ['products', 'orders', 'stock_logs', 'stock_alerts', 'store_profile'],
     };
   } catch (err: any) {
     await client.query('ROLLBACK');
@@ -185,6 +202,85 @@ export async function initDatabase(): Promise<{ success: boolean; message: strin
   } finally {
     client.release();
   }
+}
+
+export async function getStoreProfile(): Promise<{
+  ownerName: string;
+  storeName: string;
+  roleTitle: string;
+  avatarUrl: string;
+}> {
+  try {
+    const pool = getPool();
+    const res = await pool.query('SELECT owner_name, store_name, role_title, avatar_url FROM store_profile WHERE id = 1');
+    if (res.rows.length > 0) {
+      const row = res.rows[0];
+      return {
+        ownerName: row.owner_name || 'Muhammad',
+        storeName: row.store_name || 'StokPintar UMKM',
+        roleTitle: row.role_title || 'Pemilik Usaha (UMKM)',
+        avatarUrl: row.avatar_url || '',
+      };
+    }
+  } catch (err) {
+    // If table doesn't exist yet, return default
+  }
+  return {
+    ownerName: 'Muhammad',
+    storeName: 'StokPintar UMKM',
+    roleTitle: 'Pemilik Usaha (UMKM)',
+    avatarUrl: '',
+  };
+}
+
+export async function updateStoreProfile(profile: {
+  ownerName?: string;
+  storeName?: string;
+  roleTitle?: string;
+  avatarUrl?: string;
+}): Promise<{
+  ownerName: string;
+  storeName: string;
+  roleTitle: string;
+  avatarUrl: string;
+}> {
+  const pool = getPool();
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS store_profile (
+      id SERIAL PRIMARY KEY,
+      owner_name VARCHAR(255) NOT NULL DEFAULT 'Muhammad',
+      store_name VARCHAR(255) NOT NULL DEFAULT 'StokPintar UMKM',
+      role_title VARCHAR(100) NOT NULL DEFAULT 'Pemilik Usaha (UMKM)',
+      avatar_url TEXT DEFAULT '',
+      created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  const res = await pool.query(`
+    INSERT INTO store_profile (id, owner_name, store_name, role_title, avatar_url, updated_at)
+    VALUES (1, $1, $2, $3, $4, NOW())
+    ON CONFLICT (id) DO UPDATE
+    SET owner_name = EXCLUDED.owner_name,
+        store_name = EXCLUDED.store_name,
+        role_title = EXCLUDED.role_title,
+        avatar_url = EXCLUDED.avatar_url,
+        updated_at = NOW()
+    RETURNING owner_name, store_name, role_title, avatar_url;
+  `, [
+    profile.ownerName || 'Muhammad',
+    profile.storeName || 'StokPintar UMKM',
+    profile.roleTitle || 'Pemilik Usaha (UMKM)',
+    profile.avatarUrl || '',
+  ]);
+
+  const row = res.rows[0];
+  return {
+    ownerName: row.owner_name,
+    storeName: row.store_name,
+    roleTitle: row.role_title,
+    avatarUrl: row.avatar_url,
+  };
 }
 
 export async function seedDatabase(): Promise<{ success: boolean; message: string; count: number }> {
